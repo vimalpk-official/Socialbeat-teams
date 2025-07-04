@@ -1,6 +1,7 @@
+import React, { useState } from "react";
 import { Drawer, Card, Button } from "antd";
 import { createStyles, useTheme } from "antd-style";
-import { DeleteOutlined } from "@ant-design/icons";
+import CustomModal from "./Modal";
 
 // Custom drawer styles using antd-style tokens
 const useStyle = createStyles(({ token }) => ({
@@ -22,7 +23,9 @@ const Notification = ({ open, onClose }) => {
   const { styles } = useStyle();
   const token = useTheme();
 
-  // Class names applied to drawer parts
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+
   const classNames = {
     body: styles["my-drawer-body"],
     mask: styles["my-drawer-mask"],
@@ -31,7 +34,6 @@ const Notification = ({ open, onClose }) => {
     content: styles["my-drawer-content"],
   };
 
-  // Inline style overrides
   const drawerStyles = {
     mask: {
       backdropFilter: "blur(10px)",
@@ -51,10 +53,27 @@ const Notification = ({ open, onClose }) => {
     },
   };
 
+  const handleOpen = () => {
+    setSelectedMember(null); // Can pass member object if needed
+    setIsModalOpen(true);
+  };
+
+  const handleOk = (data) => {
+    console.log("Modal submitted with data:", data);
+    setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <Drawer
       title="Notifications"
       placement="right"
+      open={open}
+      onClose={onClose}
+      className="!p-2"
       footer={
         <div style={{ position: "relative", height: 40 }}>
           <Button
@@ -72,26 +91,27 @@ const Notification = ({ open, onClose }) => {
           </Button>
         </div>
       }
-      className="!p-2"
-      onClose={onClose}
-      open={open}
       classNames={classNames}
       styles={drawerStyles}
     >
-      {/* Notification Card */}
+      {/* Notification Card that opens modal on click */}
       <Card
-        className="relative mb-3"
+        className="relative mb-3 cursor-pointer border border-gray-300 hover:border-blue-500"
         style={{ width: 350 }}
         bodyStyle={{ padding: 10 }}
+        onClick={handleOpen}
       >
-        Vimal PK Changed his bio
-        <DeleteOutlined
-          className="absolute right-3 top-3 text-red-500"
-          style={{ fontSize: 20 }}
-        />
+        Vimal changed his bio
       </Card>
 
-      {/* Outlined Button styled like Material UI */}
+
+      {/* Modal */}
+      <CustomModal
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        selectedMember={selectedMember}
+      />
     </Drawer>
   );
 };
