@@ -96,7 +96,7 @@ const ProfileDrawer = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
 
-  console.log("this is vimal "+ editedData);
+  console.log("this is vimal " + editedData);
   useEffect(() => {
     if (selectedMember) {
       setEditedData({ ...selectedMember });
@@ -366,7 +366,12 @@ const ProfileDrawer = ({
               <Button onClick={handleRemove} danger className="w-1/2">
                 Remove
               </Button>
-              <Button onClick={handleUpdate} ghost type="primary" className="w-1/2">
+              <Button
+                onClick={handleUpdate}
+                ghost
+                type="primary"
+                className="w-1/2"
+              >
                 Update
               </Button>
             </div>
@@ -454,7 +459,7 @@ const TeamManagement = () => {
       setLoading(true);
       try {
         const response = await axios.post(
-          "http://team-api.socialbeat.in/api/team/get",
+          "https://team-api.socialbeat.in/api/team/get",
           {},
           {
             headers: { "Content-Type": "application/json" },
