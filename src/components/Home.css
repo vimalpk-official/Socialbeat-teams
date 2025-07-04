@@ -1,0 +1,28 @@
+body {
+  background-color: #2b2b6b !important ;
+}
+
+
+
+.ant-pagination-options{
+  display: none !important;
+}
+
+.ant-pagination-item {
+  margin-right: 8px !important; 
+  margin-top: 8px !important;
+}
+
+
+.anticon-left,
+.anticon-right {
+  color: white !important;
+}
+
+
+.ant-pagination-item:hover {
+  background-color: #ef4036 !important;
+}
+.ant-pagination-item-ellipsis{
+  color: white !important;
+}
