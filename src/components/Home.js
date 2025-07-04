@@ -96,8 +96,8 @@ const ProfileDrawer = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
 
-  console.log("this is vimal " + editedData);
-
+  console.log("this is vimal "+ editedData);
+  
   useEffect(() => {
     if (selectedMember) {
       setEditedData({ ...selectedMember });
@@ -367,12 +367,7 @@ const ProfileDrawer = ({
               <Button onClick={handleRemove} danger className="w-1/2">
                 Remove
               </Button>
-              <Button
-                onClick={handleUpdate}
-                ghost
-                type="primary"
-                className="w-1/2"
-              >
+              <Button onClick={handleUpdate} ghost type="primary" className="w-1/2">
                 Update
               </Button>
             </div>
@@ -455,67 +450,65 @@ const TeamManagement = () => {
     console.log("Member removed:", memberToRemove);
   };
 
-useEffect(() => {
-  const fetchTeamData = async () => {
-    setLoading(true);
-    
-    try {
-      // Method 2: HTTP with CORS enabled
-      const response = await fetch("http://team-api.socialbeat.in/api/team/get", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({}),
-        mode: 'cors', // CORS enabled
-      });
-      
-      const data = await response.json();
-      
-      // Your transformation logic
-      const transformedData = [];
-      const allTeam = data.teams?.find((team) => team.name === "All");
-      
-      if (allTeam?.members) {
-        allTeam.members.forEach((member) => {
-          const m = member.memberID;
-          if (m) {
-            // Check if current user is HR
-            if (m.email === email && m.team?.some((t) => t.name === "HR & Finance")) {
-              setHeaderFlag(true);
-            }
-            
-            transformedData.push({
-              key: m._id,
-              name: m.name || "",
-              email: m.email || "",
-              designation: m.designationText || m.designation || "",
-              doj: m.createdAt ? new Date(m.createdAt).toLocaleDateString() : "",
-              team: m.team && m.team.length > 0 
-                ? m.team.map((t) => t.name).join(", ") 
-                : allTeam.name,
-              dob: m.dob || "N/A",
-              profilePicture: m.profilePicture || "",
-              about: m.bio || "N/A",
-            });
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.post(
+          "http://team-api.socialbeat.in/api/team/get",
+          {},
+          {
+            headers: { "Content-Type": "application/json" },
           }
-        });
+        );
+
+        const transformedData = [];
+        const allTeam = response.data.teams?.find(
+          (team) => team.name === "All"
+        );
+
+        if (allTeam?.members) {
+          allTeam.members.forEach((member) => {
+            const m = member.memberID;
+            if (m) {
+              // Check if current user is HR
+              if (
+                m.email === email &&
+                m.team?.some((t) => t.name === "HR & Finance")
+              ) {
+                setHeaderFlag(true);
+              }
+
+              transformedData.push({
+                key: m._id,
+                name: m.name || "",
+                email: m.email || "",
+                designation: m.designationText || m.designation || "",
+                doj: m.createdAt
+                  ? new Date(m.createdAt).toLocaleDateString()
+                  : "",
+                team:
+                  m.team && m.team.length > 0
+                    ? m.team.map((t) => t.name).join(", ")
+                    : allTeam.name,
+                dob: m.dob || "N/A",
+                profilePicture: m.profilePicture || "",
+                about: m.bio || "N/A",
+              });
+            }
+          });
+        }
+
+        setDataSource(transformedData);
+      } catch (error) {
+        console.error("Error fetching team data:", error);
+      } finally {
+        setLoading(false);
       }
-      
-      setDataSource(transformedData);
-      console.log("✅ Team data fetched successfully");
-      
-    } catch (error) {
-      console.error("❌ Error fetching team data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchTeamData();
-}, [email, setHeaderFlag]);
-
+    fetchTeamData();
+  }, [email, setHeaderFlag]);
 
   const onDragEnd = ({ active, over }) => {
     if (active.id !== over?.id) {
