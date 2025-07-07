@@ -33,7 +33,8 @@ const CustomModal = ({ open, onOk, onCancel, selectedMember }) => {
         designation: selectedMember.designation || '',
         doj: selectedMember.doj ? dayjs(selectedMember.doj, 'DD/MM/YYYY') : null,
         content: selectedMember.about || '',
-        team: selectedMember.team || '',
+        team:  selectedMember.team || selectedMember?.team?.map(t => t.name).join(', ') || '',
+
         dob: selectedMember.dob !== 'N/A' ? dayjs(selectedMember.dob, 'DD/MM/YYYY') : null,
         profilePic: selectedMember.profilePicture || '',
       });

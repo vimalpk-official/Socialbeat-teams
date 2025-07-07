@@ -96,7 +96,6 @@ const ProfileDrawer = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
 
-  console.log("this is vimal "+ editedData);
   
   useEffect(() => {
     if (selectedMember) {
