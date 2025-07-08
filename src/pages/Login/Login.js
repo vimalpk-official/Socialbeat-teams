@@ -2,7 +2,7 @@ import "./Login.css";
 import React, { useState, useContext } from "react";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
-import { AppContext } from "../AppContext";
+import { AppContext } from "../../context/AppContext";
 
 function Login() {
   const [input, setInput] = useState("");

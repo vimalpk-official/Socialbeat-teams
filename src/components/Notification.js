@@ -52,7 +52,7 @@ const Notification = ({ open, onClose }) => {
   };
 
   const handleOpen = (member) => {
-    console.log("Opening modal for member:", member); // ✅ Log this
+    console.log("Opening modal for member:", member); 
     setSelectedMember(member);
     setIsModalOpen(true);
   };
@@ -165,23 +165,6 @@ const Notification = ({ open, onClose }) => {
       open={open}
       onClose={onClose}
       className="!p-2"
-      footer={
-        <div style={{ position: "relative", height: 40 }}>
-          <Button
-            type="default"
-            style={{
-              position: "absolute",
-              right: 0,
-              top: 0,
-              borderColor: token.colorPrimary,
-              color: token.colorPrimary,
-            }}
-            onClick={onClose}
-          >
-            Clear All
-          </Button>
-        </div>
-      }
       classNames={classNames}
       styles={drawerStyles}
     >

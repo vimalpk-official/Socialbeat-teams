@@ -26,3 +26,18 @@ body {
 .ant-pagination-item-ellipsis{
   color: white !important;
 }
+
+.ant-table-container{
+  border: 0% !important;
+}
+
+
+
+.acss-pgpe64{
+  background-color: #fafafa !important;
+}
+
+:where(.css-dev-only-do-not-override-1rfzxih).ant-table-wrapper 
+.ant-table.ant-table-bordered > .ant-table-container {
+  border: none !important;
+}

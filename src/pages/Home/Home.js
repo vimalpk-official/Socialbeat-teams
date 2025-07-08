@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import CustomModal from "./Modal";
+// import CustomModal from "./Modal";
+
+import CustomModal from "../../components/Modal";
+
+
 import {
   Table,
   Image,
@@ -10,6 +14,7 @@ import {
   Upload,
   DatePicker,
   Input,
+  Tag,
 } from "antd";
 import {
   RightCircleOutlined,
@@ -17,7 +22,7 @@ import {
   UploadOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import Header from "./Header";
+import Header from "../../components/Header";
 import dayjs from "dayjs";
 import {
   DndContext,
@@ -35,7 +40,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { createStyles, useTheme } from "antd-style";
 import "./Home.css";
-import { AppContext } from "../AppContext";
+import { AppContext } from "../../context/AppContext";
 
 const useStyle = createStyles(({ token }) => ({
   "my-drawer-body": {
@@ -96,7 +101,6 @@ const ProfileDrawer = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
 
-  
   useEffect(() => {
     if (selectedMember) {
       setEditedData({ ...selectedMember });
@@ -214,8 +218,10 @@ const ProfileDrawer = ({
                   setEditedData({ ...selectedMember });
                 }}
               >
-                <EditOutlined style={{ fontSize: 20 }} />
-                <span className="ml-2">Edit</span>
+                <button className="flex items-center">
+                  <EditOutlined style={{ fontSize: 20 }} />
+                  <span className="ml-2">Edit</span>
+                </button>
               </div>
             )}
           </div>
@@ -275,14 +281,7 @@ const ProfileDrawer = ({
             </Descriptions.Item>
 
             <Descriptions.Item label="Email">
-              {isEditing ? (
-                <Input
-                  value={editedData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                />
-              ) : (
-                selectedMember.email
-              )}
+              {selectedMember.email}
             </Descriptions.Item>
 
             <Descriptions.Item label="Designation">
@@ -310,27 +309,11 @@ const ProfileDrawer = ({
             </Descriptions.Item>
 
             <Descriptions.Item label="Date of Joining">
-              {isEditing ? (
-                <DatePicker
-                  value={editedData.doj ? dayjs(editedData.doj) : null}
-                  onChange={(date) => handleDateChange("doj", date)}
-                  style={{ width: "100%" }}
-                />
-              ) : (
-                selectedMember.doj
-              )}
+              {selectedMember.doj}
             </Descriptions.Item>
 
             <Descriptions.Item label="DOB">
-              {isEditing ? (
-                <DatePicker
-                  value={editedData.dob ? dayjs(editedData.dob) : null}
-                  onChange={(date) => handleDateChange("dob", date)}
-                  style={{ width: "100%" }}
-                />
-              ) : (
-                selectedMember.dob
-              )}
+              {selectedMember.dob}
             </Descriptions.Item>
 
             <Descriptions.Item label="About">
@@ -366,7 +349,12 @@ const ProfileDrawer = ({
               <Button onClick={handleRemove} danger className="w-1/2">
                 Remove
               </Button>
-              <Button onClick={handleUpdate} ghost type="primary" className="w-1/2">
+              <Button
+                onClick={handleUpdate}
+                ghost
+                type="primary"
+                className="w-1/2"
+              >
                 Update
               </Button>
             </div>
@@ -384,11 +372,18 @@ const TeamManagement = () => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const { currentUser, setCurrentUser } = useContext(AppContext);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+
   const handleOk = () => setOpen(false);
 
   const context = useContext(AppContext);
+
   const email = context?.email || "";
   const headerFlag = context?.headerFlag || false;
   const setHeaderFlag = context?.setHeaderFlag || (() => {});
@@ -396,6 +391,23 @@ const TeamManagement = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
   );
+
+  const teamColorMap = {
+    "HR & Finance": "volcano",
+    Technology: "yellow",
+    // "Marketing": "green",
+    // "Sales": "purple",
+    // "Design": "cyan",
+    // "All": "default",
+    "Media Planning": "red",
+    "Business Development": "magenta",
+    "Design & UX": "volcano",
+    "SEO & Content": "orange",
+    "Sales Force": "gold",
+    Social: "blue",
+    Strategy: "green",
+    Video: "cyan",
+  };
 
   const columns = [
     {
@@ -414,22 +426,45 @@ const TeamManagement = () => {
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Designation", dataIndex: "designation", key: "designation" },
-    { title: "Team", dataIndex: "team", key: "team" },
+    {
+      title: "Team",
+      dataIndex: "team",
+      key: "team",
+      render: (team) => {
+        const teamList = team.split(",").map((t) => t.trim());
+        return (
+          <>
+            {teamList.map((t) => (
+              <Tag key={t} color={teamColorMap[t] || "black"} className="!me-2">
+                {t}
+              </Tag>
+            ))}
+          </>
+        );
+      },
+    },
     { title: "Date of Joining", dataIndex: "doj", key: "doj" },
     { title: "DOB", dataIndex: "dob", key: "dob" },
     {
       title: "Action",
       key: "action",
-      render: (_, record) => (
-        <RightCircleOutlined
-          className="action-arrow"
-          style={{ fontSize: 24, color: "#1890ff", cursor: "pointer" }}
-          onClick={() => {
-            setSelectedMember(record);
-            setIsDrawerVisible(true);
-          }}
-        />
-      ),
+      render: (_, record) => {
+        // Optional logic if needed outside JSX
+        if (record.email === email) {
+          setCurrentUser(record);
+        }
+
+        return (
+          <RightCircleOutlined
+            className="action-arrow"
+            style={{ fontSize: 24, color: "#1890ff", cursor: "pointer" }}
+            onClick={() => {
+              setSelectedMember(record);
+              setIsDrawerVisible(true);
+            }}
+          />
+        );
+      },
     },
   ];
 
@@ -519,32 +554,61 @@ const TeamManagement = () => {
     }
   };
 
+  // First, reorder your dataSource
+  const reorderedDataSource = (() => {
+    const userItem = dataSource.find((item) => item.email === email);
+    if (userItem) {
+      const otherItems = dataSource.filter((item) => item.email !== email);
+      return [userItem, ...otherItems];
+    } else {
+      return dataSource;
+    }
+  })();
+
   return (
     <>
-      <Header />
-      <DndContext
-        sensors={sensors}
-        modifiers={[restrictToVerticalAxis]}
-        onDragEnd={onDragEnd}
-      >
-        <SortableContext
-          items={dataSource.map((i) => i.key)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="p-6">
-            <Table
-              components={{ body: { row: Row } }}
-              rowKey="key"
-              pagination={true}
-              columns={columns}
-              dataSource={dataSource}
-              loading={loading}
-              style={{ borderRadius: "12px", overflow: "hidden" }}
-            />
-          </div>
-        </SortableContext>
-      </DndContext>
+      <Header
+        currentUser={currentUser}
+        setSelectedMember={setSelectedMember}
+        setIsDrawerVisible={setIsDrawerVisible}
+      />
 
+      
+      {headerFlag ? (
+        <DndContext
+          sensors={sensors}
+          modifiers={[restrictToVerticalAxis]}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext
+            items={reorderedDataSource.map((i) => i.key)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="p-6">
+              <Table
+                components={{ body: { row: Row } }}
+                rowKey="key"
+                pagination={true}
+                columns={columns}
+                dataSource={reorderedDataSource} 
+                loading={loading}
+                style={{ borderRadius: "12px", overflow: "hidden" }}
+              />
+            </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <div className="p-6">
+          <Table
+            rowKey="key"
+            pagination={true}
+            columns={columns}
+            dataSource={reorderedDataSource}
+            loading={loading}
+            style={{ borderRadius: "12px", overflow: "hidden" }}
+          />
+        </div>
+      )}
       <ProfileDrawer
         selectedMember={selectedMember}
         isDrawerVisible={isDrawerVisible}
@@ -554,8 +618,9 @@ const TeamManagement = () => {
         onUpdateMember={handleUpdateMember}
         onRemoveMember={handleRemoveMember}
         onOpenModal={handleOpen}
+        currentUser={currentUser}
+        hiddeinbutton
       />
-
       <CustomModal
         open={open}
         onOk={handleOk}
