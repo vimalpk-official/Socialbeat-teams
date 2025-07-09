@@ -4,6 +4,7 @@ import axios from "axios";
 
 import CustomModal from "../../components/Modal";
 
+
 import {
   Table,
   Image,
@@ -11,7 +12,6 @@ import {
   Descriptions,
   Button,
   Upload,
-  DatePicker,
   Input,
   Tag,
 } from "antd";
@@ -22,7 +22,6 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import Header from "../../components/Header";
-import dayjs from "dayjs";
 import {
   DndContext,
   PointerSensor,
@@ -95,7 +94,7 @@ const ProfileDrawer = ({
   headerFlag,
   onUpdateMember,
   onRemoveMember,
-  onOpenModal, // Added this prop
+  onOpenModal, 
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({});
@@ -113,12 +112,6 @@ const ProfileDrawer = ({
     }));
   };
 
-  const handleDateChange = (field, date) => {
-    setEditedData((prev) => ({
-      ...prev,
-      [field]: date ? date.format("YYYY-MM-DD") : "",
-    }));
-  };
 
   const handleImageUpload = (info) => {
     if (info.file.status === "done") {
@@ -162,7 +155,7 @@ const ProfileDrawer = ({
     console.log("Update member:", selectedMember);
 
     if (onOpenModal) {
-      onOpenModal(selectedMember); // Pass data to modal
+      onOpenModal(selectedMember); 
     }
   };
 
@@ -483,398 +476,65 @@ const TeamManagement = () => {
     console.log("Member removed:", memberToRemove);
   };
 
-useEffect(() => {
-  const fetchTeamData = async () => {
-    setLoading(true);
-    let success = false;
-    
-    // Method 1: Simple fetch POST (like cURL)
-    if (!success) {
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      setLoading(true);
       try {
-        console.log('Trying Method 1: Simple fetch POST');
-        const response = await fetch('http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 1 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 1 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 1 ERROR:', error.message);
-      }
-    }
-    
-    // Method 2: Fetch with basic headers
-    if (!success) {
-      try {
-        console.log('Trying Method 2: Fetch with basic headers');
-        const response = await fetch('http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 2 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 2 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 2 ERROR:', error.message);
-      }
-    }
-    
-    // Method 3: Fetch with empty JSON body
-    if (!success) {
-      try {
-        console.log('Trying Method 3: Fetch with empty JSON body');
-        const response = await fetch('http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 3 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 3 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 3 ERROR:', error.message);
-      }
-    }
-    
-    // Method 4: Axios simple POST
-    if (!success) {
-      try {
-        console.log('Trying Method 4: Axios simple POST');
-        const response = await axios.post('http://team-api.socialbeat.in/api/team/get');
-        
-        if (response.data) {
-          console.log('Method 4 SUCCESS:', response.data);
-          success = await processTeamData(response.data);
-        } else {
-          console.log('Method 4 FAILED: No data');
-        }
-      } catch (error) {
-        console.log('Method 4 ERROR:', error.message);
-      }
-    }
-    
-    // Method 5: Axios with empty object
-    if (!success) {
-      try {
-        console.log('Trying Method 5: Axios with empty object');
-        const response = await axios.post('http://team-api.socialbeat.in/api/team/get', {});
-        
-        if (response.data) {
-          console.log('Method 5 SUCCESS:', response.data);
-          success = await processTeamData(response.data);
-        } else {
-          console.log('Method 5 FAILED: No data');
-        }
-      } catch (error) {
-        console.log('Method 5 ERROR:', error.message);
-      }
-    }
-    
-    // Method 6: Axios with custom headers
-    if (!success) {
-      try {
-        console.log('Trying Method 6: Axios with custom headers');
-        const response = await axios({
-          method: 'POST',
-          url: 'http://team-api.socialbeat.in/api/team/get',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-          data: {},
-        });
-        
-        if (response.data) {
-          console.log('Method 6 SUCCESS:', response.data);
-          success = await processTeamData(response.data);
-        } else {
-          console.log('Method 6 FAILED: No data');
-        }
-      } catch (error) {
-        console.log('Method 6 ERROR:', error.message);
-      }
-    }
-    
-    // Method 7: XMLHttpRequest POST
-    if (!success) {
-      try {
-        console.log('Trying Method 7: XMLHttpRequest POST');
-        const data = await new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', 'http://team-api.socialbeat.in/api/team/get', true);
-          
-          xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const data = JSON.parse(xhr.responseText);
-                resolve(data);
-              } catch (e) {
-                reject(new Error('Invalid JSON'));
-              }
-            } else {
-              reject(new Error(`HTTP ${xhr.status}`));
-            }
-          };
-          
-          xhr.onerror = () => reject(new Error('Network error'));
-          xhr.send();
-        });
-        
-        console.log('Method 7 SUCCESS:', data);
-        success = await processTeamData(data);
-      } catch (error) {
-        console.log('Method 7 ERROR:', error.message);
-      }
-    }
-    
-    // Method 8: Fetch with form data
-    if (!success) {
-      try {
-        console.log('Trying Method 8: Fetch with form data');
-        const response = await fetch('http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams().toString(),
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 8 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 8 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 8 ERROR:', error.message);
-      }
-    }
-    
-    // Method 9: Fetch with CORS mode
-    if (!success) {
-      try {
-        console.log('Trying Method 9: Fetch with CORS mode');
-        const response = await fetch('http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          mode: 'cors',
-          credentials: 'omit',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 9 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 9 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 9 ERROR:', error.message);
-      }
-    }
-    
-    // Method 10: Fetch with no-cors mode
-    if (!success) {
-      try {
-        console.log('Trying Method 10: Fetch with no-cors mode');
-        const response = await fetch('http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          mode: 'no-cors',
-        });
-        
-        // Note: no-cors mode doesn't allow reading response, but we can try
-        console.log('Method 10 response:', response);
-        if (response.type === 'opaque') {
-          console.log('Method 10: Got opaque response (CORS issue)');
-        }
-      } catch (error) {
-        console.log('Method 10 ERROR:', error.message);
-      }
-    }
-    
-    // Method 11: Axios with different timeout
-    if (!success) {
-      try {
-        console.log('Trying Method 11: Axios with timeout');
-        const response = await axios({
-          method: 'POST',
-          url: 'http://team-api.socialbeat.in/api/team/get',
-          timeout: 30000,
-          headers: {
-            'User-Agent': 'React-App',
-          },
-        });
-        
-        if (response.data) {
-          console.log('Method 11 SUCCESS:', response.data);
-          success = await processTeamData(response.data);
-        } else {
-          console.log('Method 11 FAILED: No data');
-        }
-      } catch (error) {
-        console.log('Method 11 ERROR:', error.message);
-      }
-    }
-    
-    // Method 12: Try with HTTPS instead of HTTP
-    if (!success) {
-      try {
-        console.log('Trying Method 12: HTTPS instead of HTTP');
-        const response = await fetch('https://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 12 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 12 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 12 ERROR:', error.message);
-      }
-    }
-    
-    // Method 13: Try with different Accept headers
-    if (!success) {
-      try {
-        console.log('Trying Method 13: Different Accept headers');
-        const response = await fetch('http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          headers: {
-            'Accept': '*/*',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate',
-          },
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 13 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 13 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 13 ERROR:', error.message);
-      }
-    }
-    
-    // Method 14: Try with proxy (last resort)
-    if (!success) {
-      try {
-        console.log('Trying Method 14: CORS proxy');
-        const response = await fetch('https://cors-anywhere.herokuapp.com/http://team-api.socialbeat.in/api/team/get', {
-          method: 'POST',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Method 14 SUCCESS:', data);
-          success = await processTeamData(data);
-        } else {
-          console.log('Method 14 FAILED: HTTP', response.status);
-        }
-      } catch (error) {
-        console.log('Method 14 ERROR:', error.message);
-      }
-    }
-    
-    // If all methods failed
-    if (!success) {
-      console.error('ALL METHODS FAILED - Unable to fetch team data');
-    }
-    
-    setLoading(false);
-    
-    // Helper function to process team data
-    async function processTeamData(data) {
-      try {
-        if (!data || !data.teams) {
-          console.log('Invalid data structure:', data);
-          return false;
-        }
-        
-        const transformedData = [];
-        const allTeam = data.teams.find((team) => team.name === "All");
-        
-        if (!allTeam || !allTeam.members) {
-          console.log('No "All" team found or no members:', allTeam);
-          return false;
-        }
-        
-        allTeam.members.forEach((member) => {
-          const m = member.memberID;
-          if (m) {
-            // Check if current user is HR
-            if (
-              m.email === email &&
-              m.team?.some((t) => t.name === "HR & Finance")
-            ) {
-              setHeaderFlag(true);
-            }
-            
-            transformedData.push({
-              key: m._id,
-              name: m.name || "",
-              email: m.email || "",
-              designation: m.designationText || m.designation || "",
-              doj: m.createdAt
-                ? new Date(m.createdAt).toLocaleDateString()
-                : "",
-              team:
-                m.team && m.team.length > 0
-                  ? m.team.map((t) => t.name).join(", ")
-                  : allTeam.name,
-              dob: m.dob || "N/A",
-              profilePicture: m.profilePicture || "",
-              about: m.bio || "N/A",
-            });
+        const response = await axios.post(
+          "http://team-api.socialbeat.in/api/team/get",
+          {},
+          {
+            headers: { "Content-Type": "application/json" },
           }
-        });
-        
-        console.log('Processed data:', transformedData);
+        );
+
+        const transformedData = [];
+        const allTeam = response.data.teams?.find(
+          (team) => team.name === "All"
+        );
+
+        if (allTeam?.members) {
+          allTeam.members.forEach((member) => {
+            const m = member.memberID;
+            if (m) {
+              // Check if current user is HR
+              if (
+                m.email === email &&
+                m.team?.some((t) => t.name === "HR & Finance")
+              ) {
+                setHeaderFlag(true);
+              }
+
+              transformedData.push({
+                key: m._id,
+                name: m.name || "",
+                email: m.email || "",
+                designation: m.designationText || m.designation || "",
+                doj: m.createdAt
+                  ? new Date(m.createdAt).toLocaleDateString()
+                  : "",
+                team:
+                  m.team && m.team.length > 0
+                    ? m.team.map((t) => t.name).join(", ")
+                    : allTeam.name,
+                dob: m.dob || "N/A",
+                profilePicture: m.profilePicture || "",
+                about: m.bio || "N/A",
+              });
+            }
+          });
+        }
+
         setDataSource(transformedData);
-        return true;
       } catch (error) {
-        console.error('Error processing team data:', error);
-        return false;
+        console.error("Error fetching team data:", error);
+      } finally {
+        setLoading(false);
       }
-    }
-  };
-  
-  fetchTeamData();
-}, [email, setHeaderFlag]);
+    };
+
+    fetchTeamData();
+  }, [email, setHeaderFlag]);
 
   const onDragEnd = ({ active, over }) => {
     if (active.id !== over?.id) {
@@ -905,6 +565,7 @@ useEffect(() => {
         setIsDrawerVisible={setIsDrawerVisible}
       />
 
+      
       {headerFlag ? (
         <DndContext
           sensors={sensors}
@@ -921,7 +582,7 @@ useEffect(() => {
                 rowKey="key"
                 pagination={true}
                 columns={columns}
-                dataSource={reorderedDataSource}
+                dataSource={reorderedDataSource} 
                 loading={loading}
                 style={{ borderRadius: "12px", overflow: "hidden" }}
               />
