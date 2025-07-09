@@ -483,80 +483,123 @@ const TeamManagement = () => {
     console.log("Member removed:", memberToRemove);
   };
 
+  // Method 4: Using XMLHttpRequest with different approaches
   useEffect(() => {
-    const fetchTeamData = async (retries = 3, delay = 1000) => {
+    const fetchTeamData = () => {
       setLoading(true);
-      try {
-        // Add timeout to prevent hanging requests
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-        const response = await axios.post(
-          "http://team-api.socialbeat.in/api/team/get",
-          {},
-          {
-            headers: { "Content-Type": "application/json" },
-            signal: controller.signal, // For aborting on timeout
-          }
-        );
+      const tryXHR = (config) => {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
 
-        clearTimeout(timeoutId);
+          xhr.open("POST", "http://team-api.socialbeat.in/api/team/get", true);
 
-        const transformedData = [];
-        const allTeam = response.data.teams?.find(
-          (team) => team.name === "All"
-        );
+          // Set headers
+          Object.entries(config.headers).forEach(([key, value]) => {
+            xhr.setRequestHeader(key, value);
+          });
 
-        if (allTeam?.members) {
-          allTeam.members.forEach((member) => {
-            const m = member.memberID;
-            if (m) {
-              // Check if current user is HR
-              if (
-                m.email === email &&
-                m.team?.some((t) => t.name === "HR & Finance")
-              ) {
-                setHeaderFlag(true);
+          xhr.timeout = 10000;
+
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                resolve(data);
+              } catch (e) {
+                reject(new Error("Invalid JSON response"));
               }
+            } else {
+              reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+            }
+          };
 
-              transformedData.push({
-                key: m._id,
-                name: m.name || "",
-                email: m.email || "",
-                designation: m.designationText || m.designation || "",
-                doj: m.createdAt
-                  ? new Date(m.createdAt).toLocaleDateString()
-                  : "",
-                team:
-                  m.team && m.team.length > 0
-                    ? m.team.map((t) => t.name).join(", ")
-                    : allTeam.name,
-                dob: m.dob || "N/A",
-                profilePicture: m.profilePicture || "",
-                about: m.bio || "N/A",
+          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.ontimeout = () => reject(new Error("Request timeout"));
+
+          xhr.send(config.data);
+        });
+      };
+
+      const configs = [
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          data: JSON.stringify({}),
+        },
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "application/json",
+          },
+          data: "",
+        },
+        {
+          headers: {
+            Accept: "application/json",
+          },
+          data: "{}",
+        },
+      ];
+
+      const tryConfigs = async () => {
+        for (let i = 0; i < configs.length; i++) {
+          try {
+            console.log(`Trying XHR config ${i + 1}`);
+            const data = await tryXHR(configs[i]);
+            console.log(`XHR config ${i + 1} successful:`, data);
+
+            const transformedData = [];
+            const allTeam = data.teams?.find((team) => team.name === "All");
+
+            if (allTeam?.members) {
+              allTeam.members.forEach((member) => {
+                const m = member.memberID;
+                if (m) {
+                  if (
+                    m.email === email &&
+                    m.team?.some((t) => t.name === "HR & Finance")
+                  ) {
+                    setHeaderFlag(true);
+                  }
+
+                  transformedData.push({
+                    key: m._id,
+                    name: m.name || "",
+                    email: m.email || "",
+                    designation: m.designationText || m.designation || "",
+                    doj: m.createdAt
+                      ? new Date(m.createdAt).toLocaleDateString()
+                      : "",
+                    team:
+                      m.team && m.team.length > 0
+                        ? m.team.map((t) => t.name).join(", ")
+                        : allTeam.name,
+                    dob: m.dob || "N/A",
+                    profilePicture: m.profilePicture || "",
+                    about: m.bio || "N/A",
+                  });
+                }
               });
             }
-          });
-        }
 
-        setDataSource(transformedData);
-      } catch (error) {
-        if (retries > 0 && error.name !== "AbortError") {
-          console.warn(`Retrying... Attempts left: ${retries}`);
-          await new Promise((resolve) => setTimeout(resolve, delay)); // Wait before retry
-          return fetchTeamData(retries - 1, delay * 2); // Exponential backoff
+            setDataSource(transformedData);
+            break;
+          } catch (error) {
+            console.error(`XHR config ${i + 1} failed:`, error.message);
+          }
         }
-        console.error("Error fetching team data:", error.message);
-        // Optionally show a user-friendly error message
-        // setError("Failed to fetch team data. Please try again later.");
-      } finally {
         setLoading(false);
-      }
+      };
+
+      tryConfigs();
     };
 
     fetchTeamData();
   }, [email, setHeaderFlag]);
-  
+
   const onDragEnd = ({ active, over }) => {
     if (active.id !== over?.id) {
       setDataSource((prev) => {
