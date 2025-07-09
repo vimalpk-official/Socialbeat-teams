@@ -4,7 +4,6 @@ import axios from "axios";
 
 import CustomModal from "../../components/Modal";
 
-
 import {
   Table,
   Image,
@@ -485,16 +484,23 @@ const TeamManagement = () => {
   };
 
   useEffect(() => {
-    const fetchTeamData = async () => {
+    const fetchTeamData = async (retries = 3, delay = 1000) => {
       setLoading(true);
       try {
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
         const response = await axios.post(
           "http://team-api.socialbeat.in/api/team/get",
           {},
           {
             headers: { "Content-Type": "application/json" },
+            signal: controller.signal, // For aborting on timeout
           }
         );
+
+        clearTimeout(timeoutId);
 
         const transformedData = [];
         const allTeam = response.data.teams?.find(
@@ -535,7 +541,14 @@ const TeamManagement = () => {
 
         setDataSource(transformedData);
       } catch (error) {
-        console.error("Error fetching team data:", error);
+        if (retries > 0 && error.name !== "AbortError") {
+          console.warn(`Retrying... Attempts left: ${retries}`);
+          await new Promise((resolve) => setTimeout(resolve, delay)); // Wait before retry
+          return fetchTeamData(retries - 1, delay * 2); // Exponential backoff
+        }
+        console.error("Error fetching team data:", error.message);
+        // Optionally show a user-friendly error message
+        // setError("Failed to fetch team data. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -543,7 +556,7 @@ const TeamManagement = () => {
 
     fetchTeamData();
   }, [email, setHeaderFlag]);
-
+  
   const onDragEnd = ({ active, over }) => {
     if (active.id !== over?.id) {
       setDataSource((prev) => {
@@ -573,7 +586,6 @@ const TeamManagement = () => {
         setIsDrawerVisible={setIsDrawerVisible}
       />
 
-      
       {headerFlag ? (
         <DndContext
           sensors={sensors}
@@ -590,7 +602,7 @@ const TeamManagement = () => {
                 rowKey="key"
                 pagination={true}
                 columns={columns}
-                dataSource={reorderedDataSource} 
+                dataSource={reorderedDataSource}
                 loading={loading}
                 style={{ borderRadius: "12px", overflow: "hidden" }}
               />
