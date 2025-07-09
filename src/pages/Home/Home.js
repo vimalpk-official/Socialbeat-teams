@@ -483,118 +483,73 @@ const TeamManagement = () => {
     console.log("Member removed:", memberToRemove);
   };
 
-  // Method 4: Using XMLHttpRequest with different approaches
+  // Method 1: Direct conversion using fetch with cURL-like options
   useEffect(() => {
-    const fetchTeamData = () => {
+    const fetchTeamData = async () => {
       setLoading(true);
+      try {
+        const response = await fetch(
+          "http://team-api.socialbeat.in/api/team/get",
+          {
+            method: "POST",
+            headers: {
+              Accept: "*/*",
+              "Accept-Encoding": "gzip, deflate, br",
+              Connection: "keep-alive",
+            },
+            redirect: "follow", // Equivalent to CURLOPT_FOLLOWLOCATION
+            signal: AbortSignal.timeout(30000), // 30 second timeout (0 means no timeout in cURL)
+          }
+        );
 
-      const tryXHR = (config) => {
-        return new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-          xhr.open("POST", "http://team-api.socialbeat.in/api/team/get", true);
+        const data = await response.json();
+        console.log("API Response:", data);
 
-          // Set headers
-          Object.entries(config.headers).forEach(([key, value]) => {
-            xhr.setRequestHeader(key, value);
-          });
+        // Your data transformation logic here
+        const transformedData = [];
+        const allTeam = data.teams?.find((team) => team.name === "All");
 
-          xhr.timeout = 10000;
-
-          xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const data = JSON.parse(xhr.responseText);
-                resolve(data);
-              } catch (e) {
-                reject(new Error("Invalid JSON response"));
+        if (allTeam?.members) {
+          allTeam.members.forEach((member) => {
+            const m = member.memberID;
+            if (m) {
+              if (
+                m.email === email &&
+                m.team?.some((t) => t.name === "HR & Finance")
+              ) {
+                setHeaderFlag(true);
               }
-            } else {
-              reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
-            }
-          };
 
-          xhr.onerror = () => reject(new Error("Network error"));
-          xhr.ontimeout = () => reject(new Error("Request timeout"));
-
-          xhr.send(config.data);
-        });
-      };
-
-      const configs = [
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          data: JSON.stringify({}),
-        },
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            Accept: "application/json",
-          },
-          data: "",
-        },
-        {
-          headers: {
-            Accept: "application/json",
-          },
-          data: "{}",
-        },
-      ];
-
-      const tryConfigs = async () => {
-        for (let i = 0; i < configs.length; i++) {
-          try {
-            console.log(`Trying XHR config ${i + 1}`);
-            const data = await tryXHR(configs[i]);
-            console.log(`XHR config ${i + 1} successful:`, data);
-
-            const transformedData = [];
-            const allTeam = data.teams?.find((team) => team.name === "All");
-
-            if (allTeam?.members) {
-              allTeam.members.forEach((member) => {
-                const m = member.memberID;
-                if (m) {
-                  if (
-                    m.email === email &&
-                    m.team?.some((t) => t.name === "HR & Finance")
-                  ) {
-                    setHeaderFlag(true);
-                  }
-
-                  transformedData.push({
-                    key: m._id,
-                    name: m.name || "",
-                    email: m.email || "",
-                    designation: m.designationText || m.designation || "",
-                    doj: m.createdAt
-                      ? new Date(m.createdAt).toLocaleDateString()
-                      : "",
-                    team:
-                      m.team && m.team.length > 0
-                        ? m.team.map((t) => t.name).join(", ")
-                        : allTeam.name,
-                    dob: m.dob || "N/A",
-                    profilePicture: m.profilePicture || "",
-                    about: m.bio || "N/A",
-                  });
-                }
+              transformedData.push({
+                key: m._id,
+                name: m.name || "",
+                email: m.email || "",
+                designation: m.designationText || m.designation || "",
+                doj: m.createdAt
+                  ? new Date(m.createdAt).toLocaleDateString()
+                  : "",
+                team:
+                  m.team && m.team.length > 0
+                    ? m.team.map((t) => t.name).join(", ")
+                    : allTeam.name,
+                dob: m.dob || "N/A",
+                profilePicture: m.profilePicture || "",
+                about: m.bio || "N/A",
               });
             }
-
-            setDataSource(transformedData);
-            break;
-          } catch (error) {
-            console.error(`XHR config ${i + 1} failed:`, error.message);
-          }
+          });
         }
-        setLoading(false);
-      };
 
-      tryConfigs();
+        setDataSource(transformedData);
+      } catch (error) {
+        console.error("Error fetching team data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchTeamData();
