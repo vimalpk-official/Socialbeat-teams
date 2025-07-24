@@ -1,0 +1,89 @@
+body {
+  background-color: #ffffff !important ;
+}
+
+.ant-select-selection-item {
+  margin: 3px !important;
+  border: 2.5px solid rgb(226, 179, 179) !important; /* Approx. between 2px and 3px */
+  border-radius: 4px; /* Optional: smooth corners */
+}
+
+.ant-pagination-item {
+  margin-right: 8px !important;
+  margin-top: 8px !important;
+}
+
+.anticon-left,
+.anticon-right {
+  color: white !important;
+}
+
+.ant-pagination-item:hover {
+  background-color: #ef8e89 !important;
+}
+.ant-pagination-item-ellipsis {
+  color: white !important;
+}
+
+.ant-table-container {
+  border: 0% !important;
+}
+
+.acss-pgpe64 {
+  background-color: #fafafa !important;
+}
+
+:where(.css-dev-only-do-not-override-1rfzxih).ant-table-wrapper
+  .ant-table.ant-table-bordered
+  > .ant-table-container {
+  border: none !important;
+}
+
+.custom-center-menu {
+  background-color: #ffffff !important;
+}
+
+.ant-input-search-button {
+  background-color: #999;
+}
+.ant-input-search-button:hover {
+  background-color: #999 !important;
+}
+.ant-menu {
+  padding: 4px !important;
+}
+.ant-menu-title-content {
+  color: black !important;
+}
+
+.ant-menu-item {
+  padding: 12px !important;
+  margin-bottom: 12px !important;
+  margin-top: 10px !important;
+  padding-left: 5px !important;
+}
+
+.custom-center-menu .ant-menu-item {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: start !important;
+}
+/* When a menu item is selected */
+.ant-menu-item.ant-menu-item-selected {
+  background-color: #ef4036 !important;
+  color: #ffffff !important;
+}
+
+/* Change child content color only when parent is selected */
+.ant-menu-item.ant-menu-item-selected .ant-menu-title-content {
+  color: rgb(255, 255, 255) !important;
+}
+
+.custom-center-menu .ant-menu-item {
+  justify-content: start !important;
+  padding-left: 20px !important;
+}
+.ant-menu-item:not(.ant-menu-item-selected):hover {
+  background-color: #d9382f !important;
+}
